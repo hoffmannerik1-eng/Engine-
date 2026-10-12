@@ -4,473 +4,537 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>MONSTER ENGINE</title>
+<title>CASE STORM | 3D Armory</title>
 <style>
-:root{--bg:#101116;--panel:#191b23;--line:#303440;--red:#ff354b;--text:#f1f2f6;--muted:#9ca3b4}
+:root{
+ --bg:#090b11;--panel:#121722;--line:#273143;--text:#f1f5ff;
+ --muted:#8c9ab1;--accent:#ff354f;--common:#b8c0ce;
+ --rare:#55a7ff;--epic:#bc72ff;--legend:#ffbd51;--myth:#ff5a83
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:13px system-ui,Arial;overflow:hidden}
-button,input,select,textarea{font:inherit}
-button{background:#252833;border:1px solid var(--line);color:white;padding:9px 10px;border-radius:7px;cursor:pointer}
-button:active{background:#414657}
-button.primary{background:var(--red);border-color:var(--red)}
-button.active{border-color:var(--red);color:#ff7583}
-header{height:53px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid var(--line);background:#15161c}
-.logo{font-weight:900;letter-spacing:1px;font-size:17px}
-.logo span{color:var(--red)}
-#status{font-size:11px;color:#6cffad}
-#layout{height:calc(100dvh - 53px);display:grid;grid-template-columns:190px minmax(0,1fr) 235px}
-.panel{background:var(--panel);overflow:auto;min-width:0;padding:10px;border-right:1px solid var(--line)}
-.right{border-right:0;border-left:1px solid var(--line)}
-h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:8px 0 12px}
-.section{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
-.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.wide{width:100%;margin-top:6px}
-#viewport{position:relative;min-width:0;min-height:0;background:#101722;overflow:hidden}
-#view{display:block;width:100%;height:100%;touch-action:none;outline:none}
-#hint{position:absolute;top:10px;left:10px;background:#111923dd;border:1px solid #333b49;border-radius:7px;padding:8px;color:#c9cfda;font-size:11px;pointer-events:none}
-#mode{position:absolute;right:10px;top:10px;background:#171923dd;padding:7px 10px;border-radius:7px;color:#a9ffcb}
-label{display:block;color:#b5bbca;margin:9px 0 4px;font-size:11px}
-input,select,textarea{width:100%;background:#101218;color:white;border:1px solid var(--line);border-radius:6px;padding:8px;min-width:0}
-input[type=color]{height:35px;padding:3px}
-textarea{resize:vertical;font-family:monospace;font-size:11px;min-height:125px}
-.small{font-size:11px;color:var(--muted);line-height:1.5}
-#objectList{display:grid;gap:4px}
-.obj{width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.obj.selected{border-color:var(--red);background:#3a2029}
-.axis{display:grid;grid-template-columns:18px 1fr 1fr 1fr;gap:4px;align-items:center;margin-top:5px}
-.axis input{padding:6px 2px;text-align:center;font-size:11px}
-.axis b{font-size:11px;color:var(--muted)}
-#bottom{position:absolute;bottom:10px;left:10px;right:10px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;pointer-events:none}
-#bottom button{pointer-events:auto;background:#191d28ee}
-@media(max-width:760px){
- #layout{grid-template-columns:110px minmax(0,1fr);grid-template-rows:minmax(0,1fr) 205px}
- .left{grid-column:1;grid-row:1}
- #viewport{grid-column:2;grid-row:1}
- .right{grid-column:1/3;grid-row:2;border-left:0;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:12px}
- .right .section{min-width:0}
- header{padding:0 8px}
- .logo{font-size:14px}
- header button{padding:7px}
- .panel{padding:7px}
- .btns{grid-template-columns:1fr}
- h3{font-size:10px}
- #hint{max-width:75%;font-size:10px}
+body{margin:0;background:radial-gradient(ellipse at top,#1a2233,#090b11 65%);color:var(--text);font:14px system-ui,Arial;min-height:100vh}
+button,input,select{font:inherit}
+button{cursor:pointer;color:white;background:#1b2331;border:1px solid #344158;border-radius:9px;padding:10px}
+button:active{transform:scale(.98)}
+button.primary{background:linear-gradient(120deg,#ff354f,#a71643);border:0;font-weight:800}
+header{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 15px;border-bottom:1px solid var(--line);background:#0b0e15ee;position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
+.logo{font-size:18px;font-weight:1000;letter-spacing:1.3px}
+.logo span{color:var(--accent)}
+.balance{font-weight:800;color:#ffce70}
+nav{display:flex;gap:7px;padding:12px;overflow-x:auto;border-bottom:1px solid var(--line)}
+nav button{white-space:nowrap}
+nav button.active{border-color:var(--accent);background:#321823}
+main{max-width:1200px;margin:auto;padding:14px}
+.view{display:none}
+.view.active{display:block}
+.panel{background:linear-gradient(150deg,#171e2b,#10141d);border:1px solid var(--line);border-radius:15px;padding:15px;margin-bottom:14px}
+h2{font-size:19px;margin:0 0 8px}
+h3{font-size:14px;margin:0 0 10px}
+.muted{color:var(--muted);font-size:12px;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}
+.case,.weapon{background:#141b28;border:1px solid #29364a;border-radius:12px;overflow:hidden;min-width:0}
+.art{height:115px;display:flex;align-items:center;justify-content:center;position:relative;background:radial-gradient(ellipse,#27364b,#10141d)}
+.art canvas{width:100%;height:100%;display:block;touch-action:pan-y}
+.case .info,.weapon .info{padding:10px}
+.case strong,.weapon strong{display:block;overflow-wrap:anywhere;font-size:12px}
+.price{color:#ffce70;font-size:12px;margin:6px 0}
+.tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.6px;padding:4px 6px;border-radius:4px;background:#283142;color:var(--common)}
+.common{border-color:#657082}.rare{border-color:var(--rare)}
+.epic{border-color:var(--epic)}.legendary{border-color:var(--legend)}
+.mythic{border-color:var(--myth)}
+.common .tag{color:var(--common)}.rare .tag{color:var(--rare)}
+.epic .tag{color:var(--epic)}.legendary .tag{color:var(--legend)}
+.mythic .tag{color:var(--myth)}
+.case .art{height:145px}
+.case .art .crate{font-size:62px;filter:drop-shadow(0 5px 18px #ff354f55)}
+.weapon .art{height:135px}
+.weapon button,.case button{width:100%;margin-top:7px}
+#opening{display:none;position:fixed;inset:0;background:#05070cf5;z-index:20;align-items:center;justify-content:center;padding:14px}
+#opening.show{display:flex}
+.open-card{width:min(680px,100%);background:#131925;border:1px solid #364258;border-radius:18px;padding:16px;text-align:center}
+.reel-window{overflow:hidden;position:relative;border:1px solid #343f54;border-radius:10px;background:#090d15;margin:15px 0}
+.reel{display:flex;gap:8px;padding:12px;transform:translateX(0);will-change:transform}
+.reel-item{flex:0 0 112px;height:115px;background:#182132;border-bottom:4px solid var(--common);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
+.reel-item span:first-child{font-size:32px}
+.reel-item small{font-size:10px;padding:0 4px}
+.pointer{position:absolute;left:50%;top:0;bottom:0;width:3px;background:#fff;box-shadow:0 0 14px white;z-index:2}
+#dropName{font-size:20px;font-weight:900;margin:10px}
+#previewWrap{height:340px;background:radial-gradient(ellipse,#27374d,#0a0d14 72%);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative}
+#preview{width:100%;height:100%;display:block;touch-action:none}
+#previewHelp{position:absolute;bottom:8px;left:8px;color:#b4c0d4;font-size:11px;pointer-events:none}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.controls button{flex:1}
+input,select{background:#0b1019;color:white;border:1px solid #344158;border-radius:8px;padding:10px;min-width:0}
+.filters{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.filters input{flex:1;min-width:130px}
+.filters select{flex:1;min-width:120px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#242e40;border:1px solid #47556d;padding:12px 18px;border-radius:10px;z-index:50;display:none;max-width:90%;text-align:center}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:#111722;border:1px solid var(--line);border-radius:10px;padding:12px}
+.stat b{font-size:18px;display:block}
+.stat span{font-size:10px;color:var(--muted)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:25px}
+footer{text-align:center;padding:25px;color:#647087;font-size:11px}
+@media(min-width:760px){
+ main{padding:22px}
+ #previewLayout{display:grid;grid-template-columns:1.4fr 1fr;gap:15px;align-items:start}
+ #previewWrap{height:420px}
 }
 </style>
 </head>
 <body>
 <header>
- <div class="logo">MONSTER<span> ENGINE</span></div>
- <div style="display:flex;gap:5px">
-  <button id="saveBtn">Speichern</button>
-  <button class="primary" id="playBtn">▶ Play</button>
- </div>
+ <div class="logo">CASE <span>STORM</span></div>
+ <div class="balance">◆ <span id="coins">2500</span></div>
 </header>
-<div id="layout">
- <aside class="panel left">
-  <div class="section">
-   <h3>Objekte erstellen</h3>
-   <div class="btns">
-    <button data-add="box">＋ Würfel</button>
-    <button data-add="sphere">＋ Kugel</button>
-    <button data-add="cylinder">＋ Zylinder</button>
-    <button data-add="light">＋ Licht</button>
+<nav>
+ <button class="active" data-tab="cases">KISTEN</button>
+ <button data-tab="inventory">INVENTAR</button>
+ <button data-tab="armory">WAFFENKATALOG</button>
+ <button data-tab="previewPage">3D-ARMORY</button>
+ <button data-tab="statsPage">STATISTIK</button>
+</nav>
+<main>
+<section class="view active" id="cases">
+ <div class="panel">
+  <h2>CASE STORM</h2>
+  <p class="muted">Öffne virtuelle Kisten, entdecke seltene Skins und sammle deine Lieblingsstücke. Alle Gegenstände und Münzen sind nur Teil des Spiels.</p>
+  <div class="stats">
+   <div class="stat"><b id="statItems">0</b><span>GEGENSTÄNDE</span></div>
+   <div class="stat"><b id="statOpened">0</b><span>KISTEN GEÖFFNET</span></div>
+   <div class="stat"><b id="statValue">0</b><span>INVENTARWERT</span></div>
+  </div>
+ </div>
+ <h2>Wähle deine Kiste</h2>
+ <p class="muted">Jede Kiste hat eigene Drop-Chancen. Vorschau vor dem Öffnen inklusive.</p>
+ <div class="grid" id="caseGrid"></div>
+</section>
+
+<section class="view" id="inventory">
+ <div class="panel">
+  <h2>Dein Inventar</h2>
+  <p class="muted">Tippe auf einen Gegenstand, um ihn in 3D anzusehen. Verkaufen gibt dir virtuelle Münzen.</p>
+  <div class="filters">
+   <input id="invSearch" placeholder="Waffe suchen…">
+   <select id="invRarity"><option value="">Alle Seltenheiten</option><option>Gewöhnlich</option><option>Selten</option><option>Episch</option><option>Legendär</option><option>Mythisch</option></select>
+   <select id="invSort"><option value="new">Neueste zuerst</option><option value="value">Wert: hoch zuerst</option><option value="name">Name A–Z</option></select>
+  </div>
+  <div class="controls">
+   <button id="sellDuplicates">Duplikate verkaufen</button>
+   <button id="exportSave">Spielstand exportieren</button>
+  </div>
+ </div>
+ <div class="grid" id="inventoryGrid"></div>
+</section>
+
+<section class="view" id="armory">
+ <div class="panel">
+  <h2>Waffen-Datenbank</h2>
+  <p class="muted">1.000 virtuelle Varianten aus prozedural erzeugten Namen, Oberflächen, Mustern und Seltenheiten. Die 3D-Modelle sind stilisierte Spielmodelle, keine echten Waffenkonstruktionspläne.</p>
+  <div class="filters">
+   <input id="catalogSearch" placeholder="Alle 1000 Varianten durchsuchen…">
+   <select id="catalogRarity"><option value="">Alle Seltenheiten</option><option>Gewöhnlich</option><option>Selten</option><option>Episch</option><option>Legendär</option><option>Mythisch</option></select>
+  </div>
+  <div class="muted" id="catalogCount"></div>
+ </div>
+ <div class="grid" id="catalogGrid"></div>
+ <div class="controls"><button id="catalogMore">Weitere anzeigen</button></div>
+</section>
+
+<section class="view" id="previewPage">
+ <div class="panel">
+  <h2>3D-Armory</h2>
+  <p class="muted" id="previewName">Wähle eine Waffe aus deinem Inventar oder Katalog.</p>
+  <div id="previewLayout">
+   <div>
+    <div id="previewWrap"><canvas id="preview"></canvas><div id="previewHelp">Finger ziehen: drehen · Zwei Finger: zoomen</div></div>
+    <div class="controls">
+     <button id="rotateBtn">Auto-Drehung: AN</button>
+     <button id="resetView">Ansicht zurücksetzen</button>
+    </div>
    </div>
-   <button id="terrainBtn" class="wide">⛰ Terrain erstellen</button>
+   <div class="panel" style="margin-top:12px">
+    <h3>Gegenstandsdetails</h3>
+    <p id="detailRarity" class="tag">—</p>
+    <p id="detailDesc" class="muted">Wähle eine Waffe, um Details anzuzeigen.</p>
+    <div class="stat"><span>VIRTUELLER WERT</span><b id="detailValue">—</b></div>
+    <button id="previewSell" class="primary" style="width:100%;margin-top:10px;display:none">Für Münzen verkaufen</button>
+   </div>
   </div>
-  <div class="section">
-   <h3>Szene</h3>
-   <div id="objectList"></div>
-   <button id="deleteBtn" class="wide">Objekt löschen</button>
+ </div>
+</section>
+
+<section class="view" id="statsPage">
+ <div class="panel">
+  <h2>Spielstatistik</h2>
+  <div class="stats">
+   <div class="stat"><b id="sOpened">0</b><span>KISTEN GEÖFFNET</span></div>
+   <div class="stat"><b id="sSold">0</b><span>GEGENSTÄNDE VERKAUFT</span></div>
+   <div class="stat"><b id="sBest">—</b><span>BESTER DROP</span></div>
   </div>
-  <div class="section">
-   <h3>Projekt</h3>
-   <button id="newBtn" class="wide">Neues Projekt</button>
-   <button id="exportBtn" class="wide">Export als JSON</button>
-   <button id="importBtn" class="wide">Projekt importieren</button>
-   <input id="fileInput" type="file" accept=".json,application/json" hidden>
+  <button id="resetGame">Spielstand zurücksetzen</button>
+  <p class="muted">Der Spielstand bleibt in diesem Browser gespeichert. Lösche deine Browserdaten nicht, wenn du ihn behalten möchtest.</p>
+ </div>
+</section>
+</main>
+<footer>CASE STORM · Fan-inspirierter, eigenständiger virtueller Case-Simulator · Keine Echtgeldkäufe</footer>
+
+<div id="opening">
+ <div class="open-card">
+  <h2 id="openingTitle">Kiste wird geöffnet…</h2>
+  <p class="muted">Welche Variante landet in deiner Sammlung?</p>
+  <div class="reel-window"><div class="pointer"></div><div class="reel" id="reel"></div></div>
+  <div id="dropName">Die Rolle läuft…</div>
+  <p id="dropInfo" class="muted"></p>
+  <div class="controls">
+   <button id="closeOpening">Schließen</button>
+   <button id="viewDrop" class="primary" style="display:none">In 3D ansehen</button>
   </div>
- </aside>
- <main id="viewport">
-  <canvas id="view"></canvas>
-  <div id="hint">Ziehen: Kamera bewegen<br>Objekt antippen: auswählen<br>Pinch / Mausrad: Zoom</div>
-  <div id="mode">EDITOR</div>
-  <div id="bottom">
-   <button data-view="front">Vorne</button>
-   <button data-view="top">Oben</button>
-   <button data-view="iso">3D-Ansicht</button>
-  </div>
- </main>
- <aside class="panel right">
-  <div class="section">
-   <h3>Inspector</h3>
-   <label>Objektname</label>
-   <input id="objName" placeholder="Kein Objekt ausgewählt">
-   <label>Farbe</label>
-   <input id="objColor" type="color" value="#ff354b">
-   <label>Position X / Y / Z</label>
-   <div class="axis"><b>X</b><input id="px" type="number" step=".25"><input id="py" type="number" step=".25"><input id="pz" type="number" step=".25"></div>
-   <label>Drehung X / Y / Z</label>
-   <div class="axis"><b>°</b><input id="rx" type="number" step="15"><input id="ry" type="number" step="15"><input id="rz" type="number" step="15"></div>
-   <label>Skalierung X / Y / Z</label>
-   <div class="axis"><b>S</b><input id="sx" type="number" min=".05" step=".25"><input id="sy" type="number" min=".05" step=".25"><input id="sz" type="number" min=".05" step=".25"></div>
-   <button id="applyBtn" class="wide primary">Werte übernehmen</button>
-  </div>
-  <div class="section">
-   <h3>Physik</h3>
-   <label><input id="gravity" type="checkbox" checked style="width:auto"> Schwerkraft aktiv</label>
-   <label>Masse</label><input id="mass" type="number" min=".1" value="1" step=".5">
-   <p class="small">Im Play-Modus fallen dynamische Objekte auf den Boden. Die Physik ist vereinfacht und kein Ersatz für einen vollständigen Physik-Solver.</p>
-  </div>
-  <div class="section">
-   <h3>Script-Labor</h3>
-   <textarea id="script" spellcheck="false">// Beispiel: alle Würfel drehen
-for (const o of objects) {
-  if (o.userData.kind === "box") {
-    o.rotation.y += 0.01;
-  }
-}</textarea>
-   <button id="runScript" class="wide">▶ Script ausführen</button>
-   <div class="small" id="scriptStatus">Scripts werden lokal ausgeführt. Nur eigenen, vertrauenswürdigen Code verwenden.</div>
-  </div>
- </aside>
+ </div>
 </div>
+<div id="toast"></div>
 
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
 
-const $ = id => document.getElementById(id);
-const canvas = $('view');
-const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-renderer.setSize(canvas.clientWidth || 600, canvas.clientHeight || 400, false);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color('#9db5cf');
-scene.fog = new THREE.Fog('#9db5cf', 45, 110);
-const camera = new THREE.PerspectiveCamera(60, 1, .1, 500);
-let target = new THREE.Vector3(0, 1, 0);
-let orbit = {yaw:.75, pitch:.42, distance:13};
-const ambient = new THREE.HemisphereLight(0xffffff, 0x596273, 2);
-scene.add(ambient);
-const sun = new THREE.DirectionalLight(0xffffff, 3);
-sun.position.set(8,15,9);
-sun.castShadow = true;
-sun.shadow.mapSize.set(1024,1024);
-scene.add(sun);
-
-const grid = new THREE.GridHelper(100,100,0x555d70,0x737d90);
-grid.position.y=.005;
-scene.add(grid);
-const ground = new THREE.Mesh(
- new THREE.PlaneGeometry(1000,1000),
- new THREE.MeshStandardMaterial({color:'#657d58',roughness:1})
-);
-ground.rotation.x=-Math.PI/2;
-ground.position.y=-.04;
-ground.receiveShadow=true;
-scene.add(ground);
-
-let objects=[];
-let selected=null;
-let playing=false;
-let last=performance.now();
-let velocity=new Map();
-let pointer=null;
-let pointers=new Map();
-let lastPinch=0;
-const raycaster=new THREE.Raycaster();
-const mouse=new THREE.Vector2();
-
-function updateCamera(){
- const p=orbit.pitch;
- camera.position.set(
-  target.x + orbit.distance*Math.sin(orbit.yaw)*Math.cos(p),
-  target.y + orbit.distance*Math.sin(p),
-  target.z + orbit.distance*Math.cos(orbit.yaw)*Math.cos(p)
- );
- camera.lookAt(target);
+const $=id=>document.getElementById(id);
+const rarities=[
+ {name:'Gewöhnlich',key:'common',color:'#b8c0ce',weight:55,mult:1},
+ {name:'Selten',key:'rare',color:'#55a7ff',weight:27,mult:2},
+ {name:'Episch',key:'epic',color:'#bc72ff',weight:12,mult:5},
+ {name:'Legendär',key:'legendary',color:'#ffbd51',weight:5,mult:12},
+ {name:'Mythisch',key:'mythic',color:'#ff5a83',weight:1,mult:40}
+];
+const finishes=[
+ ['Crimson Pulse','#e52e4e'],['Arctic Ghost','#bdeeff'],
+ ['Toxic Circuit','#62ff98'],['Solar Flare','#ffbd51'],
+ ['Void Nebula','#8e6cff'],['Cyber Grid','#42d9e8'],
+ ['Obsidian','#343b4d'],['Rose Gold','#f6a4bc'],
+ ['Storm Camo','#8792a5'],['Quantum','#f0f1ff'],
+ ['Emerald Rush','#23c98b'],['Neon Vortex','#ff58d1'],
+ ['Frostbite','#6eafff'],['Inferno','#ff743d'],
+ ['Phantom Matrix','#a88cff'],['Golden Hour','#ffe17c'],
+ ['Digital Jungle','#72bd68'],['Blue Carbon','#3c6cff'],
+ ['Holo Prism','#e1b4ff'],['Night Runner','#566078']
+];
+const models=['Viper','Spectre','Pulse','Raptor','Phantom','Nova','Tempest','Vector','Rift','Falcon'];
+const patterns=['Mk.I','Mk.II','X','Pro','Elite'];
+const families=['SMG','RIFLE','PISTOL','CARBINE','MARKSMAN'];
+const cases=[
+ {name:'Neon Starter',price:150,icon:'📦',desc:'Die erste Sammlung'},
+ {name:'Arctic Vault',price:350,icon:'❄️',desc:'Kalte, helle Finishes'},
+ {name:'Crimson Storm',price:600,icon:'🔴',desc:'Rote und dunkle Skins'},
+ {name:'Quantum Core',price:950,icon:'💠',desc:'Futuristische Oberflächen'},
+ {name:'Mythic Protocol',price:1600,icon:'👑',desc:'Die seltenen Varianten'}
+];
+const weapons=[];
+let seed=17001;
+function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
+function pick(a){return a[Math.floor(rand()*a.length)]}
+function rarityFor(i){
+ const r=rand()*100;
+ let sum=0;
+ for(const x of rarities){sum+=x.weight;if(r<sum)return x}
+ return rarities[0];
 }
-function resize(){
- const w=canvas.clientWidth,h=canvas.clientHeight;
- if(!w||!h)return;
- renderer.setSize(w,h,false);
- camera.aspect=w/h;
- camera.updateProjectionMatrix();
-}
-new ResizeObserver(resize).observe(canvas);
-function mat(color='#ff354b'){
- return new THREE.MeshStandardMaterial({color,roughness:.62,metalness:.08});
-}
-function addObject(kind, opts={}){
- let mesh;
- const color=opts.color||'#ff354b';
- if(kind==='box') mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat(color));
- else if(kind==='sphere') mesh=new THREE.Mesh(new THREE.SphereGeometry(.65,24,16),mat(color));
- else if(kind==='cylinder') mesh=new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,1.2,24),mat(color));
- else if(kind==='light'){
-  mesh=new THREE.Mesh(new THREE.SphereGeometry(.22,12,8),new THREE.MeshBasicMaterial({color:'#fff1a6'}));
-  const lamp=new THREE.PointLight(0xffe5ad,12,12);
-  lamp.position.set(0,0,0);mesh.add(lamp);
- } else if(kind==='terrain'){
-  const size=24, segments=48;
-  const geo=new THREE.PlaneGeometry(size,size,segments,segments);
-  const pos=geo.attributes.position;
-  for(let i=0;i<pos.count;i++){
-   const x=pos.getX(i), y=pos.getY(i);
-   const h=Math.sin(x*.45)*.55+Math.cos(y*.37)*.4+
-    Math.sin((x+y)*.22)*.6+Math.cos(x*.12)*Math.sin(y*.15)*.7;
-   pos.setZ(i,h);
-  }
-  geo.computeVertexNormals();
-  const colors=[];
-  for(let i=0;i<pos.count;i++){
-   const h=pos.getZ(i);
-   const c=new THREE.Color(h<-.25?'#647c48':h>.7?'#c0bca9':'#57904f');
-   colors.push(c.r,c.g,c.b);
-  }
-  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
-  mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide}));
-  mesh.rotation.x=-Math.PI/2;
-  mesh.position.y=-.5;
- } else return null;
- mesh.name=opts.name||({box:'Würfel',sphere:'Kugel',cylinder:'Zylinder',light:'Licht',terrain:'Terrain'}[kind]||kind);
- mesh.userData.kind=kind;
- mesh.userData.mass=1;
- mesh.castShadow=true;
- mesh.receiveShadow=true;
- if(opts.position)mesh.position.set(...opts.position);
- else if(kind!=='terrain')mesh.position.set((Math.random()-.5)*3,kind==='light'?3:1,(Math.random()-.5)*3);
- if(opts.rotation)mesh.rotation.set(...opts.rotation);
- if(opts.scale)mesh.scale.set(...opts.scale);
- scene.add(mesh);
- objects.push(mesh);
- refreshList();
- select(mesh);
- return mesh;
-}
-function disposeObject(o){
- scene.remove(o);
- o.traverse?.(child=>{
-  child.geometry?.dispose();
-  if(Array.isArray(child.material))child.material.forEach(m=>m.dispose());
-  else child.material?.dispose();
+for(let i=0;i<1000;i++){
+ const finish=finishes[i%finishes.length];
+ const rarity=rarities[Math.floor(i/200)%rarities.length];
+ const model=models[(i*7+Math.floor(i/13))%models.length];
+ const pattern=patterns[(i*3+Math.floor(i/17))%patterns.length];
+ const family=families[i%families.length];
+ weapons.push({
+  id:'CS-'+String(i+1).padStart(4,'0'),
+  name:model+' '+pattern+' | '+finish[0],
+  family,finish:finish[0],color:finish[1],rarity,
+  value:Math.round((25+(i%31)*8)*rarity.mult),
+  pattern:i%1000,wear:(.03+(i%90)/100).toFixed(2),
+  description:family+' · '+finish[0]+' · Oberflächenmuster '+String(i+1).padStart(3,'0')
  });
 }
-function select(o){
- selected=o;
- refreshList();
- $('objName').value=o?.name||'';
- $('objColor').value='#ff354b';
- if(o){
-  const m=o.material;
-  if(m?.color)$('objColor').value='#'+m.color.getHexString();
-  setFields(o);
-  $('mass').value=o.userData.mass||1;
- }
+const byId=new Map(weapons.map(w=>[w.id,w]));
+let state={coins:2500,inventory:[],opened:0,sold:0,best:null};
+let currentWeapon=null,currentInventoryId=null,autoRotate=true;
+function save(){
+ try{localStorage.setItem('case-storm-save',JSON.stringify(state))}
+ catch(e){toast('Speicher voll. Exportiere deinen Spielstand.')}
 }
-function setFields(o){
- const vals={px:o.position.x,py:o.position.y,pz:o.position.z,
- rx:THREE.MathUtils.radToDeg(o.rotation.x),
- ry:THREE.MathUtils.radToDeg(o.rotation.y),
- rz:THREE.MathUtils.radToDeg(o.rotation.z),
- sx:o.scale.x,sy:o.scale.y,sz:o.scale.z};
- for(const [id,v] of Object.entries(vals))$(id).value=Number(v.toFixed(3));
-}
-function refreshList(){
- $('objectList').innerHTML='';
- [...objects].reverse().forEach(o=>{
-  const b=document.createElement('button');
-  b.className='obj'+(o===selected?' selected':'');
-  b.textContent=(o===selected?'◆ ':'◇ ')+o.name;
-  b.onclick=()=>select(o);
-  $('objectList').appendChild(b);
- });
-}
-function applyInspector(){
- if(!selected)return;
- selected.name=$('objName').value||selected.name;
- const n=id=>Number($(id).value)||0;
- selected.position.set(n('px'),n('py'),n('pz'));
- selected.rotation.set(THREE.MathUtils.degToRad(n('rx')),THREE.MathUtils.degToRad(n('ry')),THREE.MathUtils.degToRad(n('rz')));
- selected.scale.set(Math.max(.05,n('sx')),Math.max(.05,n('sy')),Math.max(.05,n('sz')));
- if(selected.material?.color)selected.material.color.set($('objColor').value);
- selected.userData.mass=Math.max(.1,Number($('mass').value)||1);
- refreshList();
-}
-$('applyBtn').onclick=applyInspector;
-$('objName').addEventListener('change',applyInspector);
-$('objColor').addEventListener('input',()=>{if(selected?.material?.color)selected.material.color.set($('objColor').value)});
-$('mass').addEventListener('change',()=>{if(selected)selected.userData.mass=Math.max(.1,Number($('mass').value)||1)});
-document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addObject(b.dataset.add));
-$('terrainBtn').onclick=()=>addObject('terrain');
-$('deleteBtn').onclick=()=>{
- if(!selected)return;
- const old=selected;
- objects=objects.filter(o=>o!==old);
- velocity.delete(old);
- disposeObject(old);
- select(null);
-};
-$('newBtn').onclick=()=>{
- if(!confirm('Alle Objekte entfernen und neu beginnen?'))return;
- objects.forEach(disposeObject);
- objects=[];velocity.clear();select(null);refreshList();
-};
-document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{
- const v=b.dataset.view;
- if(v==='front'){orbit.yaw=0;orbit.pitch=0;orbit.distance=15}
- if(v==='top'){orbit.pitch=1.48;orbit.distance=17}
- if(v==='iso'){orbit.yaw=.75;orbit.pitch=.42;orbit.distance=13}
- updateCamera();
-});
-
-function sceneData(){
- return {format:'MONSTER_ENGINE_PROJECT',version:1,objects:objects.map(o=>({
-  kind:o.userData.kind,name:o.name,color:o.material?.color?'#'+o.material.color.getHexString():'#ffffff',
-  position:o.position.toArray(),rotation:o.rotation.toArray().slice(0,3),
-  scale:o.scale.toArray(),mass:o.userData.mass||1
- })),settings:{gravity:$('gravity').checked,script:$('script').value}};
-}
-function loadData(data){
- if(data.format!=='MONSTER_ENGINE_PROJECT'||!Array.isArray(data.objects))throw new Error('Ungültiges Monster-Engine-Projekt');
- objects.forEach(disposeObject);objects=[];velocity.clear();select(null);
- for(const o of data.objects){
-  if(!['box','sphere','cylinder','light','terrain'].includes(o.kind))continue;
-  const m=addObject(o.kind,o);
-  m.userData.mass=o.mass||1;
- }
- $('gravity').checked=data.settings?.gravity!==false;
- $('script').value=data.settings?.script||'';
- select(null);refreshList();
-}
-function download(name,text,type='application/json'){
- const blob=new Blob([text],{type});
- const url=URL.createObjectURL(blob);
- const a=document.createElement('a');
- a.href=url;a.download=name;a.click();
- setTimeout(()=>URL.revokeObjectURL(url),1500);
-}
-$('saveBtn').onclick=()=>{
- try{localStorage.setItem('monster-engine-project',JSON.stringify(sceneData()));$('status').textContent='PROJEKT GESPEICHERT';}
- catch(e){alert('Speichern fehlgeschlagen: '+e.message)}
-};
-$('exportBtn').onclick=()=>download('monster-project.json',JSON.stringify(sceneData(),null,2));
-$('importBtn').onclick=()=>$('fileInput').click();
-$('fileInput').onchange=async e=>{
- const f=e.target.files[0];if(!f)return;
- try{loadData(JSON.parse(await f.text()));$('status').textContent='PROJEKT GELADEN';}
- catch(err){alert('Importfehler: '+err.message)}
- e.target.value='';
-};
-try{
- const saved=localStorage.getItem('monster-engine-project');
- if(saved)loadData(JSON.parse(saved));
- else {addObject('box',{name:'Startwürfel',position:[0,1,0]});addObject('sphere',{name:'Kugel',position:[2,1,0],color:'#45ff9a'});}
-}catch(e){addObject('box')}
-
-$('playBtn').onclick=()=>{
- playing=!playing;
- $('playBtn').textContent=playing?'■ Stop':'▶ Play';
- $('mode').textContent=playing?'PLAY-MODUS':'EDITOR';
- $('status').textContent=playing?'SPIEL LÄUFT':'BEREIT';
- if(!playing)velocity.clear();
-};
-$('runScript').onclick=()=>{
+function load(){
  try{
-  const fn=new Function('THREE','scene','objects','selected',
-   '"use strict";\n'+$('script').value);
-  fn(THREE,scene,objects,selected);
-  $('scriptStatus').textContent='Script ausgeführt.';
- }catch(e){$('scriptStatus').textContent='Fehler: '+e.message;}
+  const d=JSON.parse(localStorage.getItem('case-storm-save')||'null');
+  if(d&&Array.isArray(d.inventory)&&Number.isFinite(d.coins))state={...state,...d};
+ }catch(e){}
+}
+load();
+function toast(msg){
+ const t=$('toast');t.textContent=msg;t.style.display='block';
+ clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display='none',2200);
+}
+function rarityClass(r){return r?.key||'common'}
+function rarityTag(r){return `<span class="tag">${r?.name||'Gewöhnlich'}</span>`}
+function weaponBy(id){return byId.get(id)||weapons[0]}
+function inventoryItem(entry){return {...weaponBy(entry.weaponId),...entry.snapshot,instanceId:entry.instanceId}}
+function showTab(id){
+ document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+ if(id==='previewPage')resizePreview();
+ if(id==='inventory')renderInventory();
+ if(id==='armory')renderCatalog();
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+
+function renderCases(){
+ $('caseGrid').innerHTML=cases.map((c,i)=>`
+ <article class="case">
+  <div class="art"><div class="crate">${c.icon}</div></div>
+  <div class="info"><strong>${c.name}</strong>
+  <p class="muted">${c.desc}</p>
+  <div class="price">◆ ${c.price} Münzen</div>
+  <button class="primary" data-open="${i}">Kiste öffnen</button>
+  </div></article>`).join('');
+ $('caseGrid').querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openCase(Number(b.dataset.open)));
+}
+function makeDrop(caseIndex){
+ // Alle Kisten verwenden dieselben transparenten Seltenheitschancen.
+ const roll=rand()*100;
+ let sum=0,r=rarities[0];
+ for(const x of rarities){sum+=x.weight;if(roll<sum){r=x;break}}
+ let pool=weapons.filter(w=>w.rarity.key===r.key);
+ if(caseIndex===1)pool=pool.filter(w=>/Arctic|Frostbite|Blue Carbon|Obsidian/.test(w.finish)).concat(pool);
+ if(caseIndex===2)pool=pool.filter(w=>/Crimson|Inferno|Rose Gold|Night Runner/.test(w.finish)).concat(pool);
+ const w=pick(pool);
+ return {...w,instanceId:crypto.randomUUID?.()||String(Date.now())+Math.random(),obtained:Date.now()};
+}
+let lastDrop=null;
+function openCase(i){
+ const c=cases[i];
+ if(state.coins<c.price){toast('Nicht genug Münzen!');return}
+ state.coins-=c.price;state.opened++;save();refreshStats();
+ $('openingTitle').textContent=c.name;
+ $('dropName').textContent='Die Rolle läuft…';
+ $('dropInfo').textContent='';
+ $('viewDrop').style.display='none';
+ $('opening').classList.add('show');
+ const reel=$('reel');reel.style.transition='none';reel.style.transform='translateX(0)';
+ let entries=[];
+ for(let n=0;n<37;n++)entries.push(makeDrop(i));
+ lastDrop=entries[30];
+ entries[30]=lastDrop;
+ reel.innerHTML=entries.map(w=>`<div class="reel-item" style="border-color:${w.rarity.color}"><span>◈</span><small>${w.name}</small><small style="color:${w.rarity.color}">${w.rarity.name}</small></div>`).join('');
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  const item=reel.children[0].getBoundingClientRect().width;
+  const gap=8;
+  const target=30*(item+gap)-(reel.parentElement.clientWidth/2-item/2);
+  reel.style.transition='transform 4.1s cubic-bezier(.08,.7,.08,1)';
+  reel.style.transform=`translateX(-${target}px)`;
+ }));
+ setTimeout(()=>{
+  state.inventory.unshift(lastDrop);
+  if(!state.best||lastDrop.value>state.best.value)state.best={name:lastDrop.name,value:lastDrop.value};
+  save();refreshStats();renderInventory();
+  $('dropName').textContent=lastDrop.name;
+  $('dropName').style.color=lastDrop.rarity.color;
+  $('dropInfo').textContent=lastDrop.rarity.name+' · geschätzter Wert '+lastDrop.value+' Münzen';
+  $('viewDrop').style.display='block';
+ },4350);
+}
+$('closeOpening').onclick=()=>$('opening').classList.remove('show');
+$('viewDrop').onclick=()=>{
+ if(!lastDrop)return;
+ $('opening').classList.remove('show');
+ inspect(lastDrop,null);showTab('previewPage');
 };
 
-// Auswahl, Orbit-Kamera und Touch-Zoom
-function pointerPosition(e){
- const r=canvas.getBoundingClientRect();
- return {x:((e.clientX-r.left)/r.width)*2-1,y:-((e.clientY-r.top)/r.height)*2+1};
+function card(w,owned){
+ const cls=rarityClass(w.rarity);
+ return `<article class="weapon ${cls}">
+ <div class="art"><canvas data-model="${w.id}" width="300" height="150"></canvas></div>
+ <div class="info"><strong>${w.name}</strong>${rarityTag(w.rarity)}
+ <div class="price">◆ ${w.value} Münzen</div>
+ <button data-inspect="${w.id}" data-instance="${owned?w.instanceId:''}">3D ansehen</button>
+ ${owned?`<button data-sell="${w.instanceId}">Verkaufen</button>`:''}
+ </div></article>`;
 }
-function hitTest(e){
- const p=pointerPosition(e);mouse.set(p.x,p.y);raycaster.setFromCamera(mouse,camera);
- const hits=raycaster.intersectObjects(objects,true);
- if(!hits.length)return null;
- let o=hits[0].object;
- while(o.parent&&!objects.includes(o))o=o.parent;
- return objects.includes(o)?o:null;
+function attachCards(root,entries,owned){
+ root.querySelectorAll('[data-inspect]').forEach(b=>b.onclick=()=>{
+  const entry=owned?state.inventory.find(x=>x.instanceId===b.dataset.instance):null;
+  inspect(entry?inventoryItem(entry):weaponBy(b.dataset.inspect),entry?.instanceId||null);
+  showTab('previewPage');
+ });
+ root.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>sell(b.dataset.sell));
+ root.querySelectorAll('canvas[data-model]').forEach(c=>drawMini(c,weaponBy(c.dataset.model)));
 }
-canvas.addEventListener('pointerdown',e=>{
- canvas.setPointerCapture(e.pointerId);
- pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
- if(pointers.size===1){
-  pointer={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,hit:hitTest(e)};
- }else pointer=null;
-});
-canvas.addEventListener('pointermove',e=>{
- if(!pointers.has(e.pointerId))return;
- const prev=pointers.get(e.pointerId);
- pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
- if(pointers.size>=2){
-  const pts=[...pointers.values()];
-  const d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
-  if(lastPinch)orbit.distance=THREE.MathUtils.clamp(orbit.distance*(lastPinch/d),2,90);
-  lastPinch=d;updateCamera();return;
- }
- if(!pointer||pointer.id!==e.pointerId)return;
- const dx=e.clientX-prev.x,dy=e.clientY-prev.y;
- if(Math.abs(e.clientX-pointer.x)+Math.abs(e.clientY-pointer.y)>4)pointer.moved=true;
- if(pointer.moved&&!playing){
-  orbit.yaw-=dx*.008;
-  orbit.pitch=THREE.MathUtils.clamp(orbit.pitch+dy*.008,-1.35,1.48);
-  updateCamera();
- }
-});
-canvas.addEventListener('pointerup',e=>{
- if(pointer&&pointer.id===e.pointerId&&!pointer.moved){
-  if(!playing)select(pointer.hit);
- }
- pointers.delete(e.pointerId);pointer=null;lastPinch=0;
-});
-canvas.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);pointer=null;lastPinch=0});
-canvas.addEventListener('wheel',e=>{
- orbit.distance=THREE.MathUtils.clamp(orbit.distance+e.deltaY*.015,2,90);updateCamera();
-},{passive:true});
+function renderInventory(){
+ const q=$('invSearch').value.toLowerCase(),rarity=$('invRarity').value,sort=$('invSort').value;
+ let list=state.inventory.map(inventoryItem).filter(w=>(w.name+' '+w.family+' '+w.finish).toLowerCase().includes(q)&&(!rarity||w.rarity.name===rarity));
+ if(sort==='value')list.sort((a,b)=>b.value-a.value);
+ if(sort==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
+ if(sort==='new')list.sort((a,b)=>b.obtained-a.obtained);
+ $('inventoryGrid').innerHTML=list.length?list.map(w=>card(w,true)).join(''):'<div class="empty">Noch keine Gegenstände. Öffne deine erste Kiste!</div>';
+ attachCards($('inventoryGrid'),list,true);
+}
+['invSearch','invRarity','invSort'].forEach(id=>$(id).addEventListener('input',renderInventory));
+function renderCatalog(){
+ const q=$('catalogSearch').value.toLowerCase(),r=$('catalogRarity').value;
+ const list=weapons.filter(w=>(w.name+' '+w.family+' '+w.finish+' '+w.id).toLowerCase().includes(q)&&(!r||w.rarity.name===r));
+ const shown=list.slice(0,60);
+ $('catalogCount').textContent=`${list.length} Varianten gefunden · zeige ${shown.length}`;
+ $('catalogGrid').innerHTML=shown.map(w=>card(w,false)).join('');
+ attachCards($('catalogGrid'),shown,false);
+ $('catalogMore').style.display=list.length>60?'block':'none';
+ $('catalogMore').onclick=()=>{
+  const next=list.slice(60,120);
+  $('catalogGrid').insertAdjacentHTML('beforeend',next.map(w=>card(w,false)).join(''));
+  attachCards($('catalogGrid'),next,false);
+  $('catalogCount').textContent=`${list.length} Varianten gefunden · zeige ${Math.min(120,list.length)}`;
+  $('catalogMore').style.display='none';
+ };
+}
+['catalogSearch','catalogRarity'].forEach(id=>$(id).addEventListener('input',renderCatalog));
 
-// Tastatur für Desktop
-window.addEventListener('keydown',e=>{
- if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
- if(e.key==='Delete'&&selected)$('deleteBtn').click();
- if(e.key.toLowerCase()==='w'&&selected)selected.position.z-=.25;
- if(e.key.toLowerCase()==='s'&&selected)selected.position.z+=.25;
- if(e.key.toLowerCase()==='a'&&selected)selected.position.x-=.25;
- if(e.key.toLowerCase()==='d'&&selected)selected.position.x+=.25;
- if(e.key===' ') {e.preventDefault();$('playBtn').click();}
- if(selected)setFields(selected);
-});
+function sell(id){
+ const i=state.inventory.findIndex(w=>w.instanceId===id);
+ if(i<0)return;
+ const item=inventoryItem(state.inventory[i]);
+ const price=Math.max(1,Math.floor(item.value*.55));
+ state.coins+=price;state.sold++;
+ state.inventory.splice(i,1);
+ if(currentInventoryId===id){currentInventoryId=null;$('previewSell').style.display='none'}
+ save();refreshStats();renderInventory();
+ toast('Verkauft für '+price+' Münzen');
+}
+$('previewSell').onclick=()=>{if(currentInventoryId)sell(currentInventoryId)};
+$('sellDuplicates').onclick=()=>{
+ const seen=new Set();let total=0,count=0;
+ state.inventory=state.inventory.filter(entry=>{
+  const w=inventoryItem(entry),key=w.id;
+  if(seen.has(key)){total+=Math.max(1,Math.floor(w.value*.55));count++;return false}
+  seen.add(key);return true;
+ });
+ state.coins+=total;state.sold+=count;save();refreshStats();renderInventory();
+ toast(count?count+' Duplikate für '+total+' Münzen verkauft':'Keine Duplikate gefunden');
+};
+function refreshStats(){
+ $('coins').textContent=state.coins.toLocaleString('de-DE');
+ $('statItems').textContent=state.inventory.length;
+ $('statOpened').textContent=state.opened;
+ $('statValue').textContent=state.inventory.reduce((s,e)=>s+inventoryItem(e).value,0).toLocaleString('de-DE');
+ $('sOpened').textContent=state.opened;
+ $('sSold').textContent=state.sold;
+ $('sBest').textContent=state.best?state.best.value+' ◆':'—';
+}
 
-// Einfache Bodenphysik, nur für einfache Meshes
-function physics(dt){
- if(!playing)return;
- for(const o of objects){
-  if(['light','terrain'].includes(o.userData.kind))continue;
-  let v=velocity.get(o)||0;
-  if($('gravity').checked)v-=9.8*dt;
-  o.position.y+=v*dt;
-  const floor=o.userData.kind==='sphere'?o.scale.y*.65:o.scale.y*.5;
-  if(o.position.y<floor){o.position.y=floor;v=0;}
-  velocity.set(o,v);
+$('exportSave').onclick=()=>{
+ const a=document.createElement('a');
+ const url=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));
+ a.href=url;a.download='case-storm-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+$('resetGame').onclick=()=>{
+ if(!confirm('Gesamten Spielstand löschen?'))return;
+ state={coins:2500,inventory:[],opened:0,sold:0,best:null};
+ save();refreshStats();renderInventory();toast('Neuer Spielstand erstellt');
+};
+
+// Eigenes stilisiertes 3D-Modell aus Meshes, keine importierten Waffendateien.
+function makeModel(w){
+ const root=new THREE.Group();
+ const base=new THREE.MeshStandardMaterial({color:'#171d2a',metalness:.75,roughness:.3});
+ const skin=new THREE.MeshStandardMaterial({color:w.color,metalness:.45,roughness:.28});
+ const dark=new THREE.MeshStandardMaterial({color:'#090d14',metalness:.55,roughness:.4});
+ const accent=new THREE.MeshStandardMaterial({color:w.rarity.color,metalness:.4,roughness:.22,emissive:w.rarity.color,emissiveIntensity:.18});
+ function box(x,y,z,sx,sy,sz,material){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);
+  m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;root.add(m);return m;
  }
+ // Abstraktes, futuristisches Sammlerobjekt: keine realen Details.
+ box(0,0,0,3.2,.42,.52,skin);
+ box(-1.42,-.22,0,.52,.18,.46,base);
+ box(-1.52,-.4,0,.36,.35,.4,dark);
+ box(-.62,.28,0,.9,.16,.42,base);
+ box(.45,.28,0,.82,.16,.42,base);
+ box(1.2,.05,0,.35,.35,.56,accent);
+ box(.05,-.35,0,.5,.4,.45,dark);
+ box(-.15,-.12,.25,.42,.08,.04,accent);
+ box(-.15,-.12,-.25,.42,.08,.04,accent);
+ box(-1.9,.04,0,.3,.28,.42,dark);
+ box(1.65,.05,0,.3,.22,.3,base);
+ for(let i=0;i<5;i++)box(-.9+i*.42,.225,.265,.18,.035,.025,accent);
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(.22,.035,8,20),accent);
+ ring.position.set(.75,.32,.24);root.add(ring);
+ root.rotation.y=-.2;
+ root.userData={materials:[base,skin,dark,accent]};
+ return root;
 }
-function loop(now){
- requestAnimationFrame(loop);
- const dt=Math.min((now-last)/1000,.04);last=now;
- physics(dt);
- renderer.render(scene,camera);
+
+const previewRenderer=new THREE.WebGLRenderer({canvas:$('preview'),antialias:true,alpha:true});
+previewRenderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+previewRenderer.outputColorSpace=THREE.SRGBColorSpace;
+const pscene=new THREE.Scene();
+const pcamera=new THREE.PerspectiveCamera(36,1,.1,100);
+pcamera.position.set(0,1.4,7);
+pscene.add(new THREE.HemisphereLight(0xcbdcff,0x242536,2.2));
+const pLight=new THREE.DirectionalLight(0xffffff,3);
+pLight.position.set(3,5,5);pscene.add(pLight);
+const rim=new THREE.PointLight(0x5d91ff,18,20);rim.position.set(-3,1,2);pscene.add(rim);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(4,48),new THREE.MeshStandardMaterial({color:'#121927',roughness:.8}));
+floor.rotation.x=-Math.PI/2;floor.position.y=-.8;pscene.add(floor);
+let previewModel=null,drag=null,previewYaw=-.2,previewPitch=.2,previewZoom=7;
+function resizePreview(){
+ const c=$('preview'),w=c.clientWidth,h=c.clientHeight;
+ if(!w||!h)return;
+ previewRenderer.setSize(w,h,false);pcamera.aspect=w/h;pcamera.updateProjectionMatrix();
 }
-updateCamera();resize();requestAnimationFrame(loop);
+new ResizeObserver(resizePreview).observe($('previewWrap'));
+function inspect(w,instanceId){
+ currentWeapon=w;currentInventoryId=instanceId;
+ $('previewName').textContent=w.name;
+ $('detailRarity').textContent=w.rarity.name;
+ $('detailRarity').style.color=w.rarity.color;
+ $('detailDesc').textContent=w.description+' · Finish: '+w.finish+' · Muster: '+w.pattern;
+ $('detailValue').textContent=w.value.toLocaleString('de-DE')+' ◆';
+ $('previewSell').style.display=instanceId?'block':'none';
+ if(previewModel)pscene.remove(previewModel);
+ previewModel=makeModel(w);pscene.add(previewModel);
+ previewYaw=-.2;previewPitch=.2;previewZoom=7;resizePreview();
+}
+$('rotateBtn').onclick=()=>{
+ autoRotate=!autoRotate;$('rotateBtn').textContent='Auto-Drehung: '+(autoRotate?'AN':'AUS');
+};
+$('resetView').onclick=()=>{previewYaw=-.2;previewPitch=.2;previewZoom=7};
+const pc=$('preview');
+pc.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,id:e.pointerId};pc.setPointerCapture(e.pointerId)});
+pc.addEventListener('pointermove',e=>{
+ if(!drag||drag.id!==e.pointerId)return;
+ previewYaw+=(e.clientX-drag.x)*.012;
+ previewPitch=Math.max(-1,Math.min(1,previewPitch+(e.clientY-drag.y)*.01));
+ drag.x=e.clientX;drag.y=e.clientY;autoRotate=false;
+ $('rotateBtn').textContent='Auto-Drehung: AUS';
+});
+pc.addEventListener('pointerup',()=>drag=null);
+pc.addEventListener('pointercancel',()=>drag=null);
+pc.addEventListener('wheel',e=>{previewZoom=Math.max(4,Math.min(11,previewZoom+e.deltaY*.01))},{passive:true});
+function drawMini(canvas,w){
+ let r;
+ try{r=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true})}catch(e){return}
+ r.setPixelRatio(1);r.setSize(300,150,false);r.outputColorSpace=THREE.SRGBColorSpace;
+ const s=new THREE.Scene();s.background=new THREE.Color('#151d2a');
+ s.add(new THREE.HemisphereLight(0xffffff,0x303040,2));
+ const l=new THREE.DirectionalLight(0xffffff,3);l.position.set(3,5,5);s.add(l);
+ const c=new THREE.PerspectiveCamera(40,2,.1,50);c.position.set(0,1.6,6);c.lookAt(0,0,0);
+ const m=makeModel(w);s.add(m);m.rotation.y=-.35;
+ r.render(s,c);
+ // Release GPU resources after the thumbnail is drawn.
+ s.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(x=>x.dispose());else o.material.dispose()}});
+ r.dispose();
+}
+refreshStats();renderCases();renderInventory();renderCatalog();
+inspect(weapons[0],null);
+function frame(){
+ requestAnimationFrame(frame);
+ if(previewModel&&autoRotate)previewModel.rotation.y+=.006;
+ previewRenderer.render(pscene,pcamera);
+}
+requestAnimationFrame(frame);
 </script>
 </body>
 </html>
-
