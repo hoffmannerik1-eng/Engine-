@@ -1,1 +1,476 @@
 
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>MONSTER ENGINE</title>
+<style>
+:root{--bg:#101116;--panel:#191b23;--line:#303440;--red:#ff354b;--text:#f1f2f6;--muted:#9ca3b4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:13px system-ui,Arial;overflow:hidden}
+button,input,select,textarea{font:inherit}
+button{background:#252833;border:1px solid var(--line);color:white;padding:9px 10px;border-radius:7px;cursor:pointer}
+button:active{background:#414657}
+button.primary{background:var(--red);border-color:var(--red)}
+button.active{border-color:var(--red);color:#ff7583}
+header{height:53px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid var(--line);background:#15161c}
+.logo{font-weight:900;letter-spacing:1px;font-size:17px}
+.logo span{color:var(--red)}
+#status{font-size:11px;color:#6cffad}
+#layout{height:calc(100dvh - 53px);display:grid;grid-template-columns:190px minmax(0,1fr) 235px}
+.panel{background:var(--panel);overflow:auto;min-width:0;padding:10px;border-right:1px solid var(--line)}
+.right{border-right:0;border-left:1px solid var(--line)}
+h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:8px 0 12px}
+.section{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.wide{width:100%;margin-top:6px}
+#viewport{position:relative;min-width:0;min-height:0;background:#101722;overflow:hidden}
+#view{display:block;width:100%;height:100%;touch-action:none;outline:none}
+#hint{position:absolute;top:10px;left:10px;background:#111923dd;border:1px solid #333b49;border-radius:7px;padding:8px;color:#c9cfda;font-size:11px;pointer-events:none}
+#mode{position:absolute;right:10px;top:10px;background:#171923dd;padding:7px 10px;border-radius:7px;color:#a9ffcb}
+label{display:block;color:#b5bbca;margin:9px 0 4px;font-size:11px}
+input,select,textarea{width:100%;background:#101218;color:white;border:1px solid var(--line);border-radius:6px;padding:8px;min-width:0}
+input[type=color]{height:35px;padding:3px}
+textarea{resize:vertical;font-family:monospace;font-size:11px;min-height:125px}
+.small{font-size:11px;color:var(--muted);line-height:1.5}
+#objectList{display:grid;gap:4px}
+.obj{width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.obj.selected{border-color:var(--red);background:#3a2029}
+.axis{display:grid;grid-template-columns:18px 1fr 1fr 1fr;gap:4px;align-items:center;margin-top:5px}
+.axis input{padding:6px 2px;text-align:center;font-size:11px}
+.axis b{font-size:11px;color:var(--muted)}
+#bottom{position:absolute;bottom:10px;left:10px;right:10px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;pointer-events:none}
+#bottom button{pointer-events:auto;background:#191d28ee}
+@media(max-width:760px){
+ #layout{grid-template-columns:110px minmax(0,1fr);grid-template-rows:minmax(0,1fr) 205px}
+ .left{grid-column:1;grid-row:1}
+ #viewport{grid-column:2;grid-row:1}
+ .right{grid-column:1/3;grid-row:2;border-left:0;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:12px}
+ .right .section{min-width:0}
+ header{padding:0 8px}
+ .logo{font-size:14px}
+ header button{padding:7px}
+ .panel{padding:7px}
+ .btns{grid-template-columns:1fr}
+ h3{font-size:10px}
+ #hint{max-width:75%;font-size:10px}
+}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">MONSTER<span> ENGINE</span></div>
+ <div style="display:flex;gap:5px">
+  <button id="saveBtn">Speichern</button>
+  <button class="primary" id="playBtn">▶ Play</button>
+ </div>
+</header>
+<div id="layout">
+ <aside class="panel left">
+  <div class="section">
+   <h3>Objekte erstellen</h3>
+   <div class="btns">
+    <button data-add="box">＋ Würfel</button>
+    <button data-add="sphere">＋ Kugel</button>
+    <button data-add="cylinder">＋ Zylinder</button>
+    <button data-add="light">＋ Licht</button>
+   </div>
+   <button id="terrainBtn" class="wide">⛰ Terrain erstellen</button>
+  </div>
+  <div class="section">
+   <h3>Szene</h3>
+   <div id="objectList"></div>
+   <button id="deleteBtn" class="wide">Objekt löschen</button>
+  </div>
+  <div class="section">
+   <h3>Projekt</h3>
+   <button id="newBtn" class="wide">Neues Projekt</button>
+   <button id="exportBtn" class="wide">Export als JSON</button>
+   <button id="importBtn" class="wide">Projekt importieren</button>
+   <input id="fileInput" type="file" accept=".json,application/json" hidden>
+  </div>
+ </aside>
+ <main id="viewport">
+  <canvas id="view"></canvas>
+  <div id="hint">Ziehen: Kamera bewegen<br>Objekt antippen: auswählen<br>Pinch / Mausrad: Zoom</div>
+  <div id="mode">EDITOR</div>
+  <div id="bottom">
+   <button data-view="front">Vorne</button>
+   <button data-view="top">Oben</button>
+   <button data-view="iso">3D-Ansicht</button>
+  </div>
+ </main>
+ <aside class="panel right">
+  <div class="section">
+   <h3>Inspector</h3>
+   <label>Objektname</label>
+   <input id="objName" placeholder="Kein Objekt ausgewählt">
+   <label>Farbe</label>
+   <input id="objColor" type="color" value="#ff354b">
+   <label>Position X / Y / Z</label>
+   <div class="axis"><b>X</b><input id="px" type="number" step=".25"><input id="py" type="number" step=".25"><input id="pz" type="number" step=".25"></div>
+   <label>Drehung X / Y / Z</label>
+   <div class="axis"><b>°</b><input id="rx" type="number" step="15"><input id="ry" type="number" step="15"><input id="rz" type="number" step="15"></div>
+   <label>Skalierung X / Y / Z</label>
+   <div class="axis"><b>S</b><input id="sx" type="number" min=".05" step=".25"><input id="sy" type="number" min=".05" step=".25"><input id="sz" type="number" min=".05" step=".25"></div>
+   <button id="applyBtn" class="wide primary">Werte übernehmen</button>
+  </div>
+  <div class="section">
+   <h3>Physik</h3>
+   <label><input id="gravity" type="checkbox" checked style="width:auto"> Schwerkraft aktiv</label>
+   <label>Masse</label><input id="mass" type="number" min=".1" value="1" step=".5">
+   <p class="small">Im Play-Modus fallen dynamische Objekte auf den Boden. Die Physik ist vereinfacht und kein Ersatz für einen vollständigen Physik-Solver.</p>
+  </div>
+  <div class="section">
+   <h3>Script-Labor</h3>
+   <textarea id="script" spellcheck="false">// Beispiel: alle Würfel drehen
+for (const o of objects) {
+  if (o.userData.kind === "box") {
+    o.rotation.y += 0.01;
+  }
+}</textarea>
+   <button id="runScript" class="wide">▶ Script ausführen</button>
+   <div class="small" id="scriptStatus">Scripts werden lokal ausgeführt. Nur eigenen, vertrauenswürdigen Code verwenden.</div>
+  </div>
+ </aside>
+</div>
+
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+
+const $ = id => document.getElementById(id);
+const canvas = $('view');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.setSize(canvas.clientWidth || 600, canvas.clientHeight || 400, false);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#9db5cf');
+scene.fog = new THREE.Fog('#9db5cf', 45, 110);
+const camera = new THREE.PerspectiveCamera(60, 1, .1, 500);
+let target = new THREE.Vector3(0, 1, 0);
+let orbit = {yaw:.75, pitch:.42, distance:13};
+const ambient = new THREE.HemisphereLight(0xffffff, 0x596273, 2);
+scene.add(ambient);
+const sun = new THREE.DirectionalLight(0xffffff, 3);
+sun.position.set(8,15,9);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024,1024);
+scene.add(sun);
+
+const grid = new THREE.GridHelper(100,100,0x555d70,0x737d90);
+grid.position.y=.005;
+scene.add(grid);
+const ground = new THREE.Mesh(
+ new THREE.PlaneGeometry(1000,1000),
+ new THREE.MeshStandardMaterial({color:'#657d58',roughness:1})
+);
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-.04;
+ground.receiveShadow=true;
+scene.add(ground);
+
+let objects=[];
+let selected=null;
+let playing=false;
+let last=performance.now();
+let velocity=new Map();
+let pointer=null;
+let pointers=new Map();
+let lastPinch=0;
+const raycaster=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+
+function updateCamera(){
+ const p=orbit.pitch;
+ camera.position.set(
+  target.x + orbit.distance*Math.sin(orbit.yaw)*Math.cos(p),
+  target.y + orbit.distance*Math.sin(p),
+  target.z + orbit.distance*Math.cos(orbit.yaw)*Math.cos(p)
+ );
+ camera.lookAt(target);
+}
+function resize(){
+ const w=canvas.clientWidth,h=canvas.clientHeight;
+ if(!w||!h)return;
+ renderer.setSize(w,h,false);
+ camera.aspect=w/h;
+ camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(canvas);
+function mat(color='#ff354b'){
+ return new THREE.MeshStandardMaterial({color,roughness:.62,metalness:.08});
+}
+function addObject(kind, opts={}){
+ let mesh;
+ const color=opts.color||'#ff354b';
+ if(kind==='box') mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat(color));
+ else if(kind==='sphere') mesh=new THREE.Mesh(new THREE.SphereGeometry(.65,24,16),mat(color));
+ else if(kind==='cylinder') mesh=new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,1.2,24),mat(color));
+ else if(kind==='light'){
+  mesh=new THREE.Mesh(new THREE.SphereGeometry(.22,12,8),new THREE.MeshBasicMaterial({color:'#fff1a6'}));
+  const lamp=new THREE.PointLight(0xffe5ad,12,12);
+  lamp.position.set(0,0,0);mesh.add(lamp);
+ } else if(kind==='terrain'){
+  const size=24, segments=48;
+  const geo=new THREE.PlaneGeometry(size,size,segments,segments);
+  const pos=geo.attributes.position;
+  for(let i=0;i<pos.count;i++){
+   const x=pos.getX(i), y=pos.getY(i);
+   const h=Math.sin(x*.45)*.55+Math.cos(y*.37)*.4+
+    Math.sin((x+y)*.22)*.6+Math.cos(x*.12)*Math.sin(y*.15)*.7;
+   pos.setZ(i,h);
+  }
+  geo.computeVertexNormals();
+  const colors=[];
+  for(let i=0;i<pos.count;i++){
+   const h=pos.getZ(i);
+   const c=new THREE.Color(h<-.25?'#647c48':h>.7?'#c0bca9':'#57904f');
+   colors.push(c.r,c.g,c.b);
+  }
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+  mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide}));
+  mesh.rotation.x=-Math.PI/2;
+  mesh.position.y=-.5;
+ } else return null;
+ mesh.name=opts.name||({box:'Würfel',sphere:'Kugel',cylinder:'Zylinder',light:'Licht',terrain:'Terrain'}[kind]||kind);
+ mesh.userData.kind=kind;
+ mesh.userData.mass=1;
+ mesh.castShadow=true;
+ mesh.receiveShadow=true;
+ if(opts.position)mesh.position.set(...opts.position);
+ else if(kind!=='terrain')mesh.position.set((Math.random()-.5)*3,kind==='light'?3:1,(Math.random()-.5)*3);
+ if(opts.rotation)mesh.rotation.set(...opts.rotation);
+ if(opts.scale)mesh.scale.set(...opts.scale);
+ scene.add(mesh);
+ objects.push(mesh);
+ refreshList();
+ select(mesh);
+ return mesh;
+}
+function disposeObject(o){
+ scene.remove(o);
+ o.traverse?.(child=>{
+  child.geometry?.dispose();
+  if(Array.isArray(child.material))child.material.forEach(m=>m.dispose());
+  else child.material?.dispose();
+ });
+}
+function select(o){
+ selected=o;
+ refreshList();
+ $('objName').value=o?.name||'';
+ $('objColor').value='#ff354b';
+ if(o){
+  const m=o.material;
+  if(m?.color)$('objColor').value='#'+m.color.getHexString();
+  setFields(o);
+  $('mass').value=o.userData.mass||1;
+ }
+}
+function setFields(o){
+ const vals={px:o.position.x,py:o.position.y,pz:o.position.z,
+ rx:THREE.MathUtils.radToDeg(o.rotation.x),
+ ry:THREE.MathUtils.radToDeg(o.rotation.y),
+ rz:THREE.MathUtils.radToDeg(o.rotation.z),
+ sx:o.scale.x,sy:o.scale.y,sz:o.scale.z};
+ for(const [id,v] of Object.entries(vals))$(id).value=Number(v.toFixed(3));
+}
+function refreshList(){
+ $('objectList').innerHTML='';
+ [...objects].reverse().forEach(o=>{
+  const b=document.createElement('button');
+  b.className='obj'+(o===selected?' selected':'');
+  b.textContent=(o===selected?'◆ ':'◇ ')+o.name;
+  b.onclick=()=>select(o);
+  $('objectList').appendChild(b);
+ });
+}
+function applyInspector(){
+ if(!selected)return;
+ selected.name=$('objName').value||selected.name;
+ const n=id=>Number($(id).value)||0;
+ selected.position.set(n('px'),n('py'),n('pz'));
+ selected.rotation.set(THREE.MathUtils.degToRad(n('rx')),THREE.MathUtils.degToRad(n('ry')),THREE.MathUtils.degToRad(n('rz')));
+ selected.scale.set(Math.max(.05,n('sx')),Math.max(.05,n('sy')),Math.max(.05,n('sz')));
+ if(selected.material?.color)selected.material.color.set($('objColor').value);
+ selected.userData.mass=Math.max(.1,Number($('mass').value)||1);
+ refreshList();
+}
+$('applyBtn').onclick=applyInspector;
+$('objName').addEventListener('change',applyInspector);
+$('objColor').addEventListener('input',()=>{if(selected?.material?.color)selected.material.color.set($('objColor').value)});
+$('mass').addEventListener('change',()=>{if(selected)selected.userData.mass=Math.max(.1,Number($('mass').value)||1)});
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addObject(b.dataset.add));
+$('terrainBtn').onclick=()=>addObject('terrain');
+$('deleteBtn').onclick=()=>{
+ if(!selected)return;
+ const old=selected;
+ objects=objects.filter(o=>o!==old);
+ velocity.delete(old);
+ disposeObject(old);
+ select(null);
+};
+$('newBtn').onclick=()=>{
+ if(!confirm('Alle Objekte entfernen und neu beginnen?'))return;
+ objects.forEach(disposeObject);
+ objects=[];velocity.clear();select(null);refreshList();
+};
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{
+ const v=b.dataset.view;
+ if(v==='front'){orbit.yaw=0;orbit.pitch=0;orbit.distance=15}
+ if(v==='top'){orbit.pitch=1.48;orbit.distance=17}
+ if(v==='iso'){orbit.yaw=.75;orbit.pitch=.42;orbit.distance=13}
+ updateCamera();
+});
+
+function sceneData(){
+ return {format:'MONSTER_ENGINE_PROJECT',version:1,objects:objects.map(o=>({
+  kind:o.userData.kind,name:o.name,color:o.material?.color?'#'+o.material.color.getHexString():'#ffffff',
+  position:o.position.toArray(),rotation:o.rotation.toArray().slice(0,3),
+  scale:o.scale.toArray(),mass:o.userData.mass||1
+ })),settings:{gravity:$('gravity').checked,script:$('script').value}};
+}
+function loadData(data){
+ if(data.format!=='MONSTER_ENGINE_PROJECT'||!Array.isArray(data.objects))throw new Error('Ungültiges Monster-Engine-Projekt');
+ objects.forEach(disposeObject);objects=[];velocity.clear();select(null);
+ for(const o of data.objects){
+  if(!['box','sphere','cylinder','light','terrain'].includes(o.kind))continue;
+  const m=addObject(o.kind,o);
+  m.userData.mass=o.mass||1;
+ }
+ $('gravity').checked=data.settings?.gravity!==false;
+ $('script').value=data.settings?.script||'';
+ select(null);refreshList();
+}
+function download(name,text,type='application/json'){
+ const blob=new Blob([text],{type});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;a.download=name;a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+$('saveBtn').onclick=()=>{
+ try{localStorage.setItem('monster-engine-project',JSON.stringify(sceneData()));$('status').textContent='PROJEKT GESPEICHERT';}
+ catch(e){alert('Speichern fehlgeschlagen: '+e.message)}
+};
+$('exportBtn').onclick=()=>download('monster-project.json',JSON.stringify(sceneData(),null,2));
+$('importBtn').onclick=()=>$('fileInput').click();
+$('fileInput').onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{loadData(JSON.parse(await f.text()));$('status').textContent='PROJEKT GELADEN';}
+ catch(err){alert('Importfehler: '+err.message)}
+ e.target.value='';
+};
+try{
+ const saved=localStorage.getItem('monster-engine-project');
+ if(saved)loadData(JSON.parse(saved));
+ else {addObject('box',{name:'Startwürfel',position:[0,1,0]});addObject('sphere',{name:'Kugel',position:[2,1,0],color:'#45ff9a'});}
+}catch(e){addObject('box')}
+
+$('playBtn').onclick=()=>{
+ playing=!playing;
+ $('playBtn').textContent=playing?'■ Stop':'▶ Play';
+ $('mode').textContent=playing?'PLAY-MODUS':'EDITOR';
+ $('status').textContent=playing?'SPIEL LÄUFT':'BEREIT';
+ if(!playing)velocity.clear();
+};
+$('runScript').onclick=()=>{
+ try{
+  const fn=new Function('THREE','scene','objects','selected',
+   '"use strict";\n'+$('script').value);
+  fn(THREE,scene,objects,selected);
+  $('scriptStatus').textContent='Script ausgeführt.';
+ }catch(e){$('scriptStatus').textContent='Fehler: '+e.message;}
+};
+
+// Auswahl, Orbit-Kamera und Touch-Zoom
+function pointerPosition(e){
+ const r=canvas.getBoundingClientRect();
+ return {x:((e.clientX-r.left)/r.width)*2-1,y:-((e.clientY-r.top)/r.height)*2+1};
+}
+function hitTest(e){
+ const p=pointerPosition(e);mouse.set(p.x,p.y);raycaster.setFromCamera(mouse,camera);
+ const hits=raycaster.intersectObjects(objects,true);
+ if(!hits.length)return null;
+ let o=hits[0].object;
+ while(o.parent&&!objects.includes(o))o=o.parent;
+ return objects.includes(o)?o:null;
+}
+canvas.addEventListener('pointerdown',e=>{
+ canvas.setPointerCapture(e.pointerId);
+ pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(pointers.size===1){
+  pointer={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,hit:hitTest(e)};
+ }else pointer=null;
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!pointers.has(e.pointerId))return;
+ const prev=pointers.get(e.pointerId);
+ pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(pointers.size>=2){
+  const pts=[...pointers.values()];
+  const d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+  if(lastPinch)orbit.distance=THREE.MathUtils.clamp(orbit.distance*(lastPinch/d),2,90);
+  lastPinch=d;updateCamera();return;
+ }
+ if(!pointer||pointer.id!==e.pointerId)return;
+ const dx=e.clientX-prev.x,dy=e.clientY-prev.y;
+ if(Math.abs(e.clientX-pointer.x)+Math.abs(e.clientY-pointer.y)>4)pointer.moved=true;
+ if(pointer.moved&&!playing){
+  orbit.yaw-=dx*.008;
+  orbit.pitch=THREE.MathUtils.clamp(orbit.pitch+dy*.008,-1.35,1.48);
+  updateCamera();
+ }
+});
+canvas.addEventListener('pointerup',e=>{
+ if(pointer&&pointer.id===e.pointerId&&!pointer.moved){
+  if(!playing)select(pointer.hit);
+ }
+ pointers.delete(e.pointerId);pointer=null;lastPinch=0;
+});
+canvas.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);pointer=null;lastPinch=0});
+canvas.addEventListener('wheel',e=>{
+ orbit.distance=THREE.MathUtils.clamp(orbit.distance+e.deltaY*.015,2,90);updateCamera();
+},{passive:true});
+
+// Tastatur für Desktop
+window.addEventListener('keydown',e=>{
+ if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
+ if(e.key==='Delete'&&selected)$('deleteBtn').click();
+ if(e.key.toLowerCase()==='w'&&selected)selected.position.z-=.25;
+ if(e.key.toLowerCase()==='s'&&selected)selected.position.z+=.25;
+ if(e.key.toLowerCase()==='a'&&selected)selected.position.x-=.25;
+ if(e.key.toLowerCase()==='d'&&selected)selected.position.x+=.25;
+ if(e.key===' ') {e.preventDefault();$('playBtn').click();}
+ if(selected)setFields(selected);
+});
+
+// Einfache Bodenphysik, nur für einfache Meshes
+function physics(dt){
+ if(!playing)return;
+ for(const o of objects){
+  if(['light','terrain'].includes(o.userData.kind))continue;
+  let v=velocity.get(o)||0;
+  if($('gravity').checked)v-=9.8*dt;
+  o.position.y+=v*dt;
+  const floor=o.userData.kind==='sphere'?o.scale.y*.65:o.scale.y*.5;
+  if(o.position.y<floor){o.position.y=floor;v=0;}
+  velocity.set(o,v);
+ }
+}
+function loop(now){
+ requestAnimationFrame(loop);
+ const dt=Math.min((now-last)/1000,.04);last=now;
+ physics(dt);
+ renderer.render(scene,camera);
+}
+updateCamera();resize();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
+
